@@ -1,0 +1,51 @@
+service: accident-analysis
+
+provider:
+  name: aws
+  runtime: python3.12
+  stage: dev
+  region: us-east-1
+  environment:
+    BUCKET_NAME: accident-analysis-bucket
+
+plugins:
+  - serverless-python-requirements
+  - serverless-step-functions
+
+package:
+  individually: true
+  patterns:
+    - "!node_modules/**"
+    - "!yarn.lock"
+    - "!package-lock.json"
+    - "!package.json"
+
+functions:
+  getCsvFile:
+    handler: getCsvFile.handler
+    description: Download and Save CSV file in S3_bucket
+    timeout: 10
+    memorySize: 128
+
+  analyseData:
+    handler: analyseData.handler
+    description: Analyse data from CSV and save in Relational Database
+    timeout: 10
+    memorySize: 128
+
+stepFunctions:
+  stateMachines:
+    csvProcessingStateMachine:
+      role: arn:aws:iam::975050263507:role/StepFunctionRole
+      definition:
+        Comment: "State Machine to process CSV files"
+        StartAt: GetCsvFile
+        States:
+          GetCsvFile:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-getCsvFile
+            Next: AnalyseData
+          AnalyseData:
+            Type: Task
+            Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-analyseData
+            End: true
