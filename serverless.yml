@@ -6,13 +6,13 @@ provider:
   stage: dev
   region: us-east-1
   environment:
-    BUCKET_NAME: ${env:BUCKET_NAME}
+    BUCKET_NAME: accident-analysis-bucket
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:GetObject
         - s3:PutObject
-      Resource: arn:aws:s3:::${env:BUCKET_NAME}/*
+      Resource: arn:aws:s3:::accident-analysis-bucket/*
 
 plugins:
   - serverless-python-requirements
@@ -63,5 +63,5 @@ resources:
     S3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.BUCKET_NAME}
+        BucketName: accident-analysis-bucket
         AccessControl: Private

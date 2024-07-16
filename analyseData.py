@@ -10,15 +10,7 @@ bucket_name = os.environ['BUCKET_NAME']
 def handler(event, context):
   print(event)
 
-  # filename = event['body']['filename']
-  # file_obj = s3_client.get_object(Bucket=bucket_name, Key=filename)
-
-  # csv_content = file_obj['Body'].read()
-
   csv_content = event['body']['dataFrame']
-
-  # encoding = chardet.detect(csv_content)['encoding']
-  # data_stream = io.BytesIO(csv_content)
     
   df = pd.DataFrame(csv_content)
   print(df)
@@ -45,21 +37,4 @@ def handler(event, context):
   result_df = result_df.groupby(['created_at', 'road_name', 'vehicle']).sum().reset_index()
 
   print(result_df)
-  return {
-    'statusCode': 200,
-    'message': 'Success',
-    'body': {
-      # # Inclua as informações relevantes para o usuário
-      # 'total_deaths': grouped_df['number_deaths'].sum(),  # Total de mortes
-      # 'vehicle_deaths': grouped_df.to_dict('records'),  # Detalhes por veículo, data e rua
-    }
-  }
-
-
-  # return {
-  #   "statusCode": 200,
-  #   "message": f"{filename} successfully loaded from S3",
-  #   "body": {
-  #     "df": 'dataframe'
-  #   }
-  # }
+  return result_df
