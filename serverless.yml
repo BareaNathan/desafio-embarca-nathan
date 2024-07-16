@@ -2,7 +2,7 @@ service: accident-analysis
 
 provider:
   name: aws
-  runtime: python3.10
+  runtime: python3.12
   stage: dev
   region: us-east-1
   environment:
@@ -17,7 +17,6 @@ provider:
 plugins:
   - serverless-python-requirements
   - serverless-step-functions
-  - serverless-dotenv-plugin
 
 package:
   individually: true
