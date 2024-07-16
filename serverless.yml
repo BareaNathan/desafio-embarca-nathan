@@ -6,20 +6,18 @@ provider:
   stage: dev
   region: us-east-1
   environment:
-    BUCKET_NAME: accident-analysis-bucket
-
-# layers:
-#   python-layer:
-#     path: venv/lib
+    BUCKET_NAME: ${env:BUCKET_NAME}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource: arn:aws:s3:::${env:BUCKET_NAME}/*
 
 plugins:
   - serverless-python-requirements
   - serverless-step-functions
-
-# custom:
-#   pythonRequirements:
-#     dockerizePip: true
-#     layer: true
+  - serverless-dotenv-plugin
 
 package:
   individually: true
@@ -36,16 +34,12 @@ functions:
     description: Download and Save CSV file in S3_bucket
     timeout: 10
     memorySize: 128
-    # layers:
-    #   - "arn:aws:lambda:us-east-1:975050263507:layer:python-layer:1"
 
   analyseData:
     handler: analyseData.handler
     description: Analyse data from CSV and save in Relational Database
     timeout: 10
     memorySize: 128
-#     layers:
-#       - "arn:aws:lambda:us-east-1:975050263507:layer:python-layer:1"
 
 stepFunctions:
   stateMachines:
@@ -63,3 +57,11 @@ stepFunctions:
             Type: Task
             Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-analyseData
             End: true
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_NAME}
+        AccessControl: Private
